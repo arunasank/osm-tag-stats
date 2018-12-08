@@ -9,13 +9,21 @@
   "license": "ISC",
   "homepage": "https://github.com/mapbox/osm-tag-stats.git",
   "dependencies": {
+    "@mapbox/tile-reduce": "^3.2.0",
+    "@mapbox/tilebelt": "^1.0.1",
+    "@turf/turf": "^5.1.6",
+    "aws-sdk": "^2.371.0",
     "feature-filter": "2.1.0",
     "geojson-stream-merge": "^2.0.0",
     "mapbox-data-team": "^1.0.0",
+    "martinez-polygon-clipping": "^0.5.0",
     "minimist": "^1.2.0",
-    "tile-reduce": "^3.1.1",
+    "polygon-clipping": "^0.9.2",
+    "sqlite3": "^4.0.4",
+    "turf": "^7.0.0-alpha.1",
     "turf-featurecollection": "^1.0.1",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "which-polygon": "^2.2.0"
   },
   "bin": {
     "osm-tag-stats": "index.js"
