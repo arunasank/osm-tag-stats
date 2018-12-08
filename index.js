@@ -1,13 +1,10 @@
 #!/usr/bin/env node
 'use strict';
-process.env.year = 2009;
-process.env.q = 2;
-process.env.tileset = '36087';
 const help = require('./util/help.js');
 const tileReduce = require('@mapbox/tile-reduce');
 const path = require('path');
 const argv = require('minimist')(process.argv.slice(2));
-const turf = require('turf');
+const turf = require('@turf/turf');
 const fs = require('fs');
 const AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
@@ -24,7 +21,7 @@ const count = cleanArguments.argv.count,
     tiles = cleanArguments.argv.tiles,
     resultJSON = {};
 
-if ((!tmpGeojson && !count) || !mbtilesPath || argv.help) {
+if (!mbtilesPath || argv.help) {
     help();
 }
 
@@ -183,15 +180,14 @@ tileReduce({
         Bucket: 'aruna-information-seeding',
         Key: `processed/${process.env.year}-Q${process.env.q}/json/${key}/${process.env.tileset}.json`
       }
-      fs.writeFileSync(`${__dirname}/${process.env.tileset}-${key}.json`, JSON.stringify(resultJSON[key]));
-      // s3.putObject(Object.assign(s3Options, {
-      //   Body: JSON.stringify(resultJSON[key])
-      // }))
-      // .promise()
-      // .then(() => console.log(`Wrote file to s3://aruna-information-seeding/processed/${process.env.year}-Q${process.env.q}/json/${key}/${process.env.tileset}.json`))
-      // .catch((err) => {
-      //   throw err
-      // });
+      s3.putObject(Object.assign(s3Options, {
+        Body: JSON.stringify(resultJSON[key])
+      }))
+      .promise()
+      .then(() => console.log(`Wrote file to s3://aruna-information-seeding/processed/${process.env.year}-Q${process.env.q}/json/${key}/${process.env.tileset}.json`))
+      .catch((err) => {
+        throw err
+      });
     });
 });
 

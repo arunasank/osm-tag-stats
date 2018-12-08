@@ -55,11 +55,11 @@ function cleanArguments(argv, tmpFilesDir) {
     argv.count = Boolean(argv.count);
 
     //filter
-    if (argv.filter && fs.existsSync(argv.filter)) {
-        argv.filter = JSON.parse(fs.readFileSync(argv.filter));
-    } else {
-        argv.filter = false;
-    }
+    // if (argv.filter && fs.existsSync(argv.filter)) {
+    //     argv.filter = JSON.parse(fs.readFileSync(argv.filter));
+    // } else {
+    //     argv.filter = false;
+    // }
 
     //dates
     if (argv.dates) {
