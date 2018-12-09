@@ -4,7 +4,7 @@ const help = require('./util/help.js');
 const tileReduce = require('@mapbox/tile-reduce');
 const path = require('path');
 const argv = require('minimist')(process.argv.slice(2));
-const turf = require('@turf/turf');
+const turf = require('turf');
 const fs = require('fs');
 const AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
@@ -184,7 +184,6 @@ tileReduce({
         Body: JSON.stringify(resultJSON[key])
       }))
       .promise()
-      .then(() => console.log(`Wrote file to s3://aruna-information-seeding/processed/${process.env.year}-Q${process.env.q}/json/${key}/${process.env.tileset}.json`))
       .catch((err) => {
         throw err
       });
@@ -192,7 +191,6 @@ tileReduce({
 });
 
 process.on('uncaughtException', function (err) {
-  console.log(err);
   const s3 = new AWS.S3();
   const s3Options = {
     Bucket: 'aruna-information-seeding',
