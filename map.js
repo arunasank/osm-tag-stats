@@ -29,105 +29,117 @@ const getPolygons = (feature) => {
     }
 };
 const splitFeatures = (geojsonFeatureIntersectingWithTile, tile, features) => {
-  const result = turf.helpers.featureCollection([]);
-  features.forEach((mbtileFeature) => {
-    errorFeature = JSON.stringify(mbtileFeature);
-    getPolygons(geojsonFeatureIntersectingWithTile).features.forEach((geojsonFeaturePolygon) => {
-      switch((mbtileFeature.geometry.type)) {
-        case 'LineString':
-          if (turf.booleanWithin(mbtileFeature, geojsonFeaturePolygon)) {
-            result.features.push(mbtileFeature);
-          } else {
-            let split = turfLineSplit(mbtileFeature, geojsonFeaturePolygon);
-            let firstSplitLineIsOutside;
-            if(turf.booleanPointInPolygon(turf.helpers.point(mbtileFeature.geometry.coordinates[0]), geojsonFeaturePolygon)){
-              firstSplitLineIsOutside = 0;
+  const tilePolygon = tilebelt.tileToGeoJSON(tile);
+  if (geojsonFeatureIntersectingWithTile.geometry.type === 'Polygon' &&
+  turf.booleanWithin(tilePolygon, geojsonFeatureIntersectingWithTile)) {
+    const result = turf.helpers.featureCollection(features);
+    return result;
+  } else {
+    const result = turf.helpers.featureCollection([]);
+    features.forEach((mbtileFeature) => {
+      errorFeature = JSON.stringify(mbtileFeature);
+      getPolygons(geojsonFeatureIntersectingWithTile).features.forEach((geojsonFeaturePolygon) => {
+        switch((mbtileFeature.geometry.type)) {
+          case 'LineString':
+            if (turf.booleanWithin(mbtileFeature, geojsonFeaturePolygon)) {
+              result.features.push(mbtileFeature);
             } else {
-              firstSplitLineIsOutside = 1;
-            }
-            split.features.forEach((splitPart, i) => {
-              //Depending on whether the first split part is outside, add all alternate parts to the final result
-              if((i + firstSplitLineIsOutside)%2 === 0) {
-                result.features.push(turf.helpers.lineString(
-                  splitPart.geometry.coordinates,
-                  mbtileFeature.properties));
-              }
-            });
-          }
-        break;
-        case 'Point':
-          if (turf.booleanPointInPolygon(mbtileFeature, geojsonFeaturePolygon)) {
-            result.features.push(mbtileFeature);
-          }
-        break;
-        case 'MultiPoint':
-          const multiPointCoordinates = [];
-          mbtileFeature.geometry.coordinates.forEach((coordinate) => {
-            if (turf.booleanPointInPolygon(turf.helpers.point(coordinate), geojsonFeaturePolygon)) {
-              multiPointCoordinates.push(coordinate)
-            }
-          });
-          if (multiPointCoordinates.length) {
-            result.features.push(turf.helpers.multiPoint(
-              multiPointCoordinates,
-              mbtileFeature.properties
-            ));
-          }
-        break;
-        case 'MultiLineString':
-          const multiLineStringCoordinates = [];
-          mbtileFeature.geometry.coordinates.forEach(lineCoordinates => {
-            if ((turf.booleanWithin(turf.helpers.lineString(lineCoordinates), geojsonFeaturePolygon))) {
-              multiLineStringCoordinates.push(lineCoordinates);
-            } else {
-              //split each line string in the multilinestring
-              let split = turfLineSplit(turf.helpers.lineString(lineCoordinates), geojsonFeaturePolygon);
+              let split = turfLineSplit(mbtileFeature, geojsonFeaturePolygon);
+              let multiLineStringCoordinates = [];
               let firstSplitLineIsOutside;
-              //check if first point in mbtilesFeature is in polygon. If yes, 0
-              if(turf.booleanPointInPolygon(turf.helpers.point(lineCoordinates[0]), geojsonFeaturePolygon)){
+              if(turf.booleanPointInPolygon(turf.helpers.point(mbtileFeature.geometry.coordinates[0]), geojsonFeaturePolygon)){
                 firstSplitLineIsOutside = 0;
               } else {
                 firstSplitLineIsOutside = 1;
               }
-              // Depending on whether first point is in, every alternate
-              // split is inside the polygon
               split.features.forEach((splitPart, i) => {
+                //Depending on whether the first split part is outside, add all alternate parts to the final result
                 if((i + firstSplitLineIsOutside)%2 === 0) {
                   multiLineStringCoordinates.push(splitPart.geometry.coordinates);
                 }
               });
-            }
-          });
-          if (multiLineStringCoordinates.length) {
-            result.features.push(turf.helpers.multiLineString(
-              multiLineStringCoordinates,
-              mbtileFeature.properties
-            ));
-          }
-        break;
-        case 'Polygon':
-        case 'MultiPolygon':
-          let intersection;
-          try {
-             intersection = polygonClipping.intersection(geojsonFeaturePolygon.geometry.coordinates,
-              mbtileFeature.geometry.coordinates);
-            } catch (e) {
-              try {
-                intersection = polygonClipping.intersection(mbtileFeature.geometry.coordinates, geojsonFeaturePolygon.geometry.coordinates);
-              } catch (e) {
-                  throw e;
+              if (multiLineStringCoordinates.length) {
+                result.features.push(turf.helpers.multiLineString(
+                  multiLineStringCoordinates,
+                  mbtileFeature.properties
+                ));
               }
             }
-            if (intersection) {
-              result.features.push(turf.helpers.multiPolygon(
-                intersection,
-                mbtileFeature.properties));
+          break;
+          case 'Point':
+            if (turf.booleanPointInPolygon(mbtileFeature, geojsonFeaturePolygon)) {
+              result.features.push(mbtileFeature);
             }
-        break;
-      };
+          break;
+          case 'MultiPoint':
+            const multiPointCoordinates = [];
+            mbtileFeature.geometry.coordinates.forEach((coordinate) => {
+              if (turf.booleanPointInPolygon(turf.helpers.point(coordinate), geojsonFeaturePolygon)) {
+                multiPointCoordinates.push(coordinate)
+              }
+            });
+            if (multiPointCoordinates.length) {
+              result.features.push(turf.helpers.multiPoint(
+                multiPointCoordinates,
+                mbtileFeature.properties
+              ));
+            }
+          break;
+          case 'MultiLineString':
+            const multiLineStringCoordinates = [];
+            mbtileFeature.geometry.coordinates.forEach(lineCoordinates => {
+              if ((turf.booleanWithin(turf.helpers.lineString(lineCoordinates), geojsonFeaturePolygon))) {
+                multiLineStringCoordinates.push(lineCoordinates);
+              } else {
+                //split each line string in the multilinestring
+                let split = turfLineSplit(turf.helpers.lineString(lineCoordinates), geojsonFeaturePolygon);
+                let firstSplitLineIsOutside;
+                //check if first point in mbtilesFeature is in polygon. If yes, 0
+                if(turf.booleanPointInPolygon(turf.helpers.point(lineCoordinates[0]), geojsonFeaturePolygon)){
+                  firstSplitLineIsOutside = 0;
+                } else {
+                  firstSplitLineIsOutside = 1;
+                }
+                // Depending on whether first point is in, every alternate
+                // split is inside the polygon
+                split.features.forEach((splitPart, i) => {
+                  if((i + firstSplitLineIsOutside)%2 === 0) {
+                    multiLineStringCoordinates.push(splitPart.geometry.coordinates);
+                  }
+                });
+              }
+            });
+            if (multiLineStringCoordinates.length) {
+              result.features.push(turf.helpers.multiLineString(
+                multiLineStringCoordinates,
+                mbtileFeature.properties
+              ));
+            }
+          break;
+          case 'Polygon':
+          case 'MultiPolygon':
+            let intersection;
+            try {
+               intersection = polygonClipping.intersection(geojsonFeaturePolygon.geometry.coordinates,
+                mbtileFeature.geometry.coordinates);
+              } catch (e) {
+                try {
+                  intersection = polygonClipping.intersection(mbtileFeature.geometry.coordinates, geojsonFeaturePolygon.geometry.coordinates);
+                } catch (e) {
+                    throw e;
+                }
+              }
+              if (intersection) {
+                result.features.push(turf.helpers.multiPolygon(
+                  intersection,
+                  mbtileFeature.properties));
+              }
+          break;
+        };
+      });
     });
-  });
-  return result;
+    return result;
+  }
 };
 
 process.on('uncaughtException', function (err) {
@@ -169,6 +181,7 @@ module.exports = function (data, tile, writeData, done) {
             }
         });
         const splitFeaturesFinalList = splitFeatures(countyFeature, tile, result);
+        // console.log(JSON.stringify(splitFeaturesFinalList));
         callbackResult[filter.split('../feature-filters/')[1]] = splitFeaturesFinalList;
     });
 
