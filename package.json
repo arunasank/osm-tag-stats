@@ -9,7 +9,7 @@
   "license": "ISC",
   "homepage": "https://github.com/mapbox/osm-tag-stats.git",
   "dependencies": {
-    "@mapbox/tile-reduce": "^3.2.0",
+    "@mapbox/tile-reduce": "git+https://git@github.com/arunasank/tile-reduce.git#master",
     "@mapbox/tilebelt": "^1.0.1",
     "@turf/turf": "^5.1.6",
     "aws-sdk": "^2.371.0",
