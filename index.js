@@ -32,7 +32,7 @@ tileReduce({
     zoom: 12,
     map: path.join(__dirname, 'map.js'),
     sources: [{name: 'osm', mbtiles: mbtilesPath}],
-    maxWorkers: maxWorkers,
+    maxWorkers: 4,
     tiles: tiles,
     mapOptions: { count, tmpGeojson, dates, users, tagFilter, mbtilesPath }
 })
