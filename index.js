@@ -21,7 +21,7 @@ var count = cleanArguments.argv.count,
     bbox = cleanArguments.argv.bbox,
     maxWorkers = cleanArguments.argv.maxWorkers,
     tiles = cleanArguments.argv.tiles,
-    osmID = new Set(),
+    result = {},
     tmpFd;
 
 if ((!geojson && !count) || !mbtilesPath || argv.help) {
@@ -46,27 +46,20 @@ tileReduce({
         'tagFilter': tagFilter
     }
 })
-.on('start', function () {
-    if (tmpGeojson) {
-        tmpFd = fs.openSync(tmpGeojson, 'w');
-    }
-})
 .on('reduce', function (id) {
-    if (count && id) {
-        id.forEach(function (idElement) {
-            osmID.add(idElement);
-        });
-    }
+  if (id) {
+    Object.keys(id).forEach(val => {
+      if (result[val]) {
+        result[val].count += id[val].count;
+        result[val].length += id[val].length;
+      } else {
+        result[val] = {};
+        result[val].count = id[val].count;
+        result[val].length = id[val].length;
+      }
+    })
+  }
 })
 .on('end', function () {
-    if (count) {
-        console.log('Features total: %d', osmID.size);
-    }
-    if (geojson) {
-        gsm(tmpGeojson, geojson, function () {
-            fs.closeSync(tmpFd);
-            fs.unlinkSync(tmpGeojson);
-            fs.rmdirSync(tmpDir);
-        });
-    }
+  fs.writeFileSync(`${mbtilesPath}.geojson`, JSON.stringify(result)); 
 });
