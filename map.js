@@ -1,11 +1,6 @@
 'use strict';
 
-<<<<<<< HEAD
-var fs = require('fs');
-var ff = require('feature-filter');
-var featureCollection = require('turf-featurecollection');
-var turfLength = require('@turf/length');
-=======
+
 const fs = require('fs');
 const ff = require('feature-filter');
 const turf = require('turf');
@@ -148,6 +143,7 @@ const splitFeatures = (geojsonFeatureIntersectingWithTile, tile, features) => {
   }
 };
 
+<<<<<<< HEAD
 process.on('uncaughtException', function (err) {
   const s3 = new AWS.S3();
   const s3Options = {
@@ -163,19 +159,19 @@ process.on('uncaughtException', function (err) {
   });
   callback();
 });
->>>>>>> latest ucb
+
 /**
  * Filters the OSM features in a single tile based on given filter.
  * @module
  * @type {number}
  */
 module.exports = function (data, tile, writeData, done) {
-    callback = done;
+    console.log('here');
     const countyFeatureId = /\d+\.mbtiles/.exec(mapOptions.mbtilesPath)[0].split('.mbtiles')[0];
     const countyFeature = countyFile.features.filter((feature) => feature.properties.GEOID === countyFeatureId)[0];
-    const callbackResult = {};
+    let callbackResult;
     mapOptions.tagFilter.split(',').forEach((filter) => {
-        const featureFilter = ff(JSON.parse(fs.readFileSync(`${__dirname}/${filter}`)));
+        const featureFilter = ff(JSON.parse(fs.readFileSync(filter)));
         var layer = data.osm.osm;
         var osmID = (mapOptions.count) ? [] : null;
         var dates = Boolean(mapOptions.dates) ? parseDates(mapOptions.dates) : false;
@@ -189,7 +185,8 @@ module.exports = function (data, tile, writeData, done) {
         });
         const splitFeaturesFinalList = splitFeatures(countyFeature, tile, result);
         // console.log(JSON.stringify(splitFeaturesFinalList));
-        callbackResult[filter.split('../feature-filters/')[1]] = splitFeaturesFinalList;
+        callbackResult = splitFeaturesFinalList;
     });
+    console.log(JSON.stringify(callbackResult));
     done(null, callbackResult);
 };
