@@ -55,7 +55,7 @@ tileReduce({
     const s3 = new AWS.S3();
     const s3Options = {
       Bucket: 'aruna-information-seeding',
-      Key: `processed/all-highways/${process.env.year}-Q${process.env.q}/json/filter1.json/${process.env.tileset}.json`
+      Key: `all-highways/processed/${process.env.year}-Q${process.env.q}/json/filter1.json/${process.env.tileset}.json`
     }
     s3.putObject(Object.assign(s3Options, {
       Body: JSON.stringify(resultJSON['filter1.json'])
