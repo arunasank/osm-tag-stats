@@ -20,7 +20,7 @@ const count = cleanArguments.argv.count,
     maxWorkers = cleanArguments.argv.maxWorkers,
     tiles = cleanArguments.argv.tiles,
     resultJSON = {
-      filter1.json: {
+      'filter1.json': {
         count: 0,
         length: 0
       }
