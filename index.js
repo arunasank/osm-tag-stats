@@ -44,7 +44,7 @@ tileReduce({
 .on('start', function () {
 })
 .on('reduce', function (results) {
-    results['filter1.json'].features.forEach((feature) => {
+    results['filter1.json'].forEach((feature) => {
         if (feature) {
           resultJSON['filter1.json'].count++;
           resultJSON['filter1.json'].length += turf.length(feature);
