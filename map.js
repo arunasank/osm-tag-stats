@@ -12,8 +12,6 @@ let errorFeature;
 const AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'});
 
-let callback;
-
 const getPolygons = (feature) => {
     switch(feature.geometry.type) {
       case 'Polygon':
@@ -29,28 +27,12 @@ const getPolygons = (feature) => {
     }
 };
 
-process.on('uncaughtException', function (err) {
-  const s3 = new AWS.S3();
-  const s3Options = {
-    Bucket: 'aruna-information-seeding',
-    Key: `errors/map/${process.env.year}-Q${process.env.q}/${process.env.tileset}.json`
-  }
-  s3.putObject(Object.assign(s3Options, {
-    Body: `${JSON.stringify(err, Object.getOwnPropertyNames(err))}\n${errorFeature}`
-  }))
-  .promise()
-  .catch((err) => {
-    console.log(err);
-  });
-  callback();
-});
 /**
  * Filters the OSM features in a single tile based on given filter.
  * @module
  * @type {number}
  */
 module.exports = function (data, tile, writeData, done) {
-    callback = done;
     const countyFeatureId = /\d+\.mbtiles/.exec(mapOptions.mbtilesPath)[0].split('.mbtiles')[0];
     const countyFeature = countyFile.features.filter((feature) => feature.properties.GEOID === countyFeatureId)[0];
     const callbackResult = {};
