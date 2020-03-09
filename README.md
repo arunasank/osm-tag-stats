@@ -6,7 +6,7 @@ _If you are using your own vector tiles, osm-tag-stats currently assumes `osm` a
 
 ### Installation
 
-* `git clone git@github.com:mapbox/osm-tag-stats.git`
+* `git clone https://github.com/arunasank/osm-tag-stats`
 * `cd osm-tag-stats`
 * `npm install`
 * `npm link`
